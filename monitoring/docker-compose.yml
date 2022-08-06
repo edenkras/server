@@ -1,0 +1,40 @@
+version: "3.4"
+
+services:
+
+  grafana:
+    restart: always
+    container_name: grafana
+    image: grafana/grafana
+    network_mode: host
+    volumes:
+      - /grafana/data:/var/lib/grafana
+      - /grafana/provisioning:/etc/grafana/provisioning
+
+  prometheus:
+    restart: always
+    container_name: prometheus
+    image: prom/prometheus
+    network_mode: host
+    volumes:
+      - /prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - /prometheus/data:/prometheus
+    command:
+      - '--storage.tsdb.retention.time=1y'
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+
+  node_exporter:
+    restart: always
+    container_name: node_exporter
+    network_mode: host
+    image: prom/node-exporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
